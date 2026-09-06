@@ -28,7 +28,10 @@ def scan_permissions(root: str | Path) -> list[Finding]:
     root = Path(root)
     findings: list[Finding] = []
     for path in _iter_files(root):
-        mode = path.stat().st_mode
+        try:
+            mode = path.stat().st_mode
+        except OSError:
+            continue  # permission denied, race with deletion, etc. — skip, don't crash the scan
         world_writable = bool(mode & stat.S_IWOTH)
         if not world_writable:
             continue

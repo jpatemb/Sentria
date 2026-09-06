@@ -1,5 +1,6 @@
 import os
 import stat
+from pathlib import Path
 
 from checks.permissions_check import scan_permissions
 
@@ -44,3 +45,34 @@ def test_evidence_includes_octal_mode(tmp_path):
     findings = scan_permissions(tmp_path)
 
     assert oct(stat.S_IMODE(os.stat(notes).st_mode)) in findings[0].evidence
+
+
+def test_unreadable_file_is_skipped_not_raised(tmp_path, monkeypatch):
+    """A file that vanishes/becomes unreadable between the directory walk and
+    the stat() call in scan_permissions must be skipped, not crash the scan.
+
+    Path.is_file() and Path.is_symlink() (used by the directory walk) also
+    call Path.stat() internally, so those calls for `notes` must succeed —
+    only the final call, the explicit one in scan_permissions, should fail.
+    """
+    notes = tmp_path / "notes.txt"
+    notes.write_text("hello\n")
+    notes.chmod(0o666)
+
+    real_stat = Path.stat
+    calls_for_notes = 0
+    calls_before_failure = 2  # is_file() + is_symlink()->lstat(), both must succeed
+
+    def flaky_stat(self, *args, **kwargs):
+        nonlocal calls_for_notes
+        if self == notes:
+            calls_for_notes += 1
+            if calls_for_notes > calls_before_failure:
+                raise PermissionError("simulated permission denied")
+        return real_stat(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", flaky_stat)
+
+    findings = scan_permissions(tmp_path)
+
+    assert findings == []
