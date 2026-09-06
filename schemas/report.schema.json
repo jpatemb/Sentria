@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "report.schema.json",
+  "title": "Report",
+  "description": "The full scan output: structured findings plus a deterministic summary and an optional model-written narrative built from that summary, never from raw scan input.",
+  "type": "object",
+  "required": ["target", "generated_at", "findings", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "type": "string",
+      "description": "Path or identifier of what was scanned."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "finding.schema.json" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["total", "by_severity", "by_category"],
+      "additionalProperties": false,
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "by_severity": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "by_category": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "narrative": {
+      "type": "string",
+      "description": "Model-written human-readable summary, produced from the structured summary/findings above — never from raw file or log content."
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "finding.schema.json",
+  "title": "Finding",
+  "description": "A single structured result produced by one deterministic check. Never produced by the model reading raw scan input directly.",
+  "type": "object",
+  "required": ["id", "check", "category", "severity", "description", "evidence", "remediation"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Deterministic id derived from check + evidence, stable across re-runs on unchanged input."
+    },
+    "check": {
+      "type": "string",
+      "description": "Name of the check that produced this finding, e.g. 'secrets_check'."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["secrets", "dependencies", "permissions"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable summary of what was found."
+    },
+    "evidence": {
+      "type": "string",
+      "description": "File path, line number, matched pattern, or other locator."
+    },
+    "remediation": {
+      "type": "string",
+      "description": "Concrete, actionable fix."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+# NOT a package definition. Nothing here is built, published, or
+# pip-installed, and no [project] or [build-system] table belongs in it.
+#
+# This file exists for exactly one reason: its presence pins pytest's
+# rootdir to the repo root, which sets confcutdir to the repo root, which is
+# what makes ./conftest.py (the offline guards) load regardless of the
+# invocation directory.
+#
+# No `testpaths` on purpose: `pytest tests/ -v` passes an explicit path.
+
+[tool.pytest.ini_options]
+addopts = "-ra"
