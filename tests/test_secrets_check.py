@@ -1,3 +1,11 @@
+"""Fixtures below use fake, non-functional credential-shaped strings
+(e.g. AKIAABCDEFGHIJKLMNOP, sk-ant-api03-abcdefghijklmnopqrstuvwx) chosen
+only to match secrets_check's detection patterns. They are synthetic test
+data, not real leaked secrets — GitHub's own secret scanning may still
+flag them by shape once this repo is public; that's expected, and those
+alerts should be dismissed as false positives / used-in-tests.
+"""
+
 from checks.secrets_check import scan_secrets
 
 
