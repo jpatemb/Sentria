@@ -11,12 +11,15 @@ from __future__ import annotations
 import json
 
 import anthropic
+from dotenv import load_dotenv
 
 from checks.dependency_check import scan_dependencies
 from checks.permissions_check import scan_permissions
 from checks.secrets_check import scan_secrets
 from context.findings import Finding, trim_findings
 from context.report import build_report
+
+load_dotenv()  # reads ANTHROPIC_API_KEY from a local .env if present; no-op otherwise
 
 MODEL = "claude-sonnet-5"
 MAX_FINDINGS_IN_CONTEXT = 50

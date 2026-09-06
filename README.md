@@ -40,8 +40,14 @@ exactly the kind of tool a prompt-injection attempt would target.
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key-here   # only needed for agent/orchestrator.py
+cp .env.example .env   # then edit .env with your key — only needed for agent/orchestrator.py
 ```
+
+`agent/orchestrator.py` loads `.env` automatically (via `python-dotenv`) if present;
+`.env` is gitignored, so your key never gets committed. Setting `ANTHROPIC_API_KEY`
+as a real environment variable (e.g. `export ANTHROPIC_API_KEY=...`) also still
+works and takes precedence — `.env` is just a convenience for keeping the key
+scoped to this project instead of your whole shell.
 
 ## Run
 
