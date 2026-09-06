@@ -47,3 +47,20 @@ def test_skips_git_directory(tmp_path):
     findings = scan_secrets(tmp_path)
 
     assert findings == []
+
+
+def test_skips_file_larger_than_size_cap(tmp_path, monkeypatch):
+    """A file over the size cap must be skipped without ever being read into
+    memory — read_text() on a genuinely huge file is what OOM-kills a broad
+    scan, so this check has to happen before any read is attempted."""
+    from checks import secrets_check
+
+    monkeypatch.setattr(secrets_check, "_MAX_FILE_SIZE", 10)
+
+    big = tmp_path / "big.py"
+    big.write_text('AWS_KEY = "AKIAABCDEFGHIJKLMNOP"\n')
+    assert big.stat().st_size > 10
+
+    findings = scan_secrets(tmp_path)
+
+    assert findings == []

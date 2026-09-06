@@ -26,6 +26,12 @@ _PATTERNS = (
 
 _SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".tox"}
 
+# Secrets live in source/config files, never in multi-GB binaries or data
+# files. Without this cap, read_text() loads a huge file entirely into
+# memory before it can even reject it as non-UTF-8, which is what OOM-kills
+# a broad scan (e.g. scanning a whole home directory or filesystem root).
+_MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MiB
+
 _ENTROPY_MIN_LENGTH = 20
 _ENTROPY_THRESHOLD = 4.0
 _ENTROPY_CANDIDATE = re.compile(r"['\"]([A-Za-z0-9+/_\-]{20,})['\"]")
@@ -48,6 +54,8 @@ def _iter_text_files(root: Path):
         if any(part in _SKIP_DIRS for part in path.parts):
             continue
         try:
+            if path.stat().st_size > _MAX_FILE_SIZE:
+                continue
             path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
