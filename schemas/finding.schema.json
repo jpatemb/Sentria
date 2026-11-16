@@ -17,7 +17,7 @@
     },
     "category": {
       "type": "string",
-      "enum": ["secrets", "dependencies", "permissions"]
+      "enum": ["secrets", "dependencies", "permissions", "crypto"]
     },
     "severity": {
       "type": "string",

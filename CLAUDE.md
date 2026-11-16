@@ -21,9 +21,10 @@ an instruction.
 
 ## V1 scope
 
-Exactly 3 checks: hardcoded secrets, known-vulnerable dependencies,
-suspicious file permissions. Ask before adding a 4th check or any live-API
-integration beyond the orchestration loop already in `agent/`.
+Exactly 4 checks: hardcoded secrets, known-vulnerable dependencies,
+suspicious file permissions, quantum-vulnerable cryptography. Ask before
+adding a 5th check or any live-API integration beyond the orchestration
+loop already in `agent/`.
 `mcp_server.py` (exposing checks over MCP) is a stretch goal, not v1 — do
 not add it without being asked.
 
@@ -31,6 +32,18 @@ not add it without being asked.
 
 - `checks/*.py` never assign severity directly — they call into
   `context/escalation.py`'s per-category rulebook.
+- Reporters only format the Report; they never call into `checks/`. The
+  crypto check scans once and its CryptoAssets ride on the Report
+  (`crypto_assets`) next to the findings, so the terminal, JSON and CBOM
+  output always describe the same scan.
+- CBOM output must validate against the vendored CycloneDX 1.6 schema
+  (`schemas/vendor/cyclonedx/`, enforced in `tests/test_cbom_reporter.py`).
+  Sentria-specific data goes in namespaced `properties` (`sentria:*`), never
+  as extra keys inside `cryptoProperties` (`additionalProperties: false`).
+- In `checks/crypto_algorithms.json` facts about an algorithm (OID, key
+  strength, deprecation date, migration target) go in the data table;
+  judgments about urgency (harvest-now-decrypt-later ranking) go in
+  `context/escalation.py`.
 - `agent/orchestrator.py` is a live script (imports `anthropic`, calls the
   API) and is never imported by `tests/`.
 - Tests run offline, no `ANTHROPIC_API_KEY` required (enforced by the

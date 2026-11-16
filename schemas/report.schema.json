@@ -35,6 +35,11 @@
         }
       }
     },
+    "crypto_assets": {
+      "type": "array",
+      "description": "Quantum-vulnerable crypto inventory from the same scan as the crypto findings. Formatted as CycloneDX 1.6 CBOM by reporters/cbom_reporter.py.",
+      "items": { "$ref": "crypto_asset.schema.json" }
+    },
     "narrative": {
       "type": "string",
       "description": "Model-written human-readable summary, produced from the structured summary/findings above — never from raw file or log content."

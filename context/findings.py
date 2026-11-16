@@ -11,7 +11,7 @@ import hashlib
 from dataclasses import asdict, dataclass
 
 SEVERITIES = ("low", "medium", "high", "critical")
-CATEGORIES = ("secrets", "dependencies", "permissions")
+CATEGORIES = ("secrets", "dependencies", "permissions", "crypto")
 
 # Lower rank = more severe. Used for sorting and trimming so the highest-
 # severity findings are the ones kept/shown first, never dropped for lows.
