@@ -54,6 +54,12 @@ context goes in namespaced properties: `sentria:hndl-risk`,
 `sentria:recommended-migration` (ML-KEM / FIPS 203 or ML-DSA / FIPS 204)
 and `sentria:reference`.
 
+Generate one offline (no API key needed):
+
+```bash
+python3 scan_cbom.py path/to/project -o cbom.json
+```
+
 ## Setup
 
 ```bash

@@ -111,3 +111,30 @@ def test_report_without_crypto_assets_yields_empty_valid_cbom():
 
     assert cbom["components"] == []
     _validator().validate(cbom)
+
+
+def test_cli_writes_a_valid_cbom_file(tmp_path, capsys):
+    from scan_cbom import main
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _fixture_repo(repo)
+    out = tmp_path / "cbom.json"
+
+    assert main([str(repo), "-o", str(out)]) == 0
+
+    cbom = json.loads(out.read_text(encoding="utf-8"))
+    assert len(cbom["components"]) == 4
+    _validator().validate(cbom)
+    assert "4 component(s)" in capsys.readouterr().err
+
+
+def test_cli_prints_cbom_to_stdout_and_rejects_non_directory(tmp_path, capsys):
+    from scan_cbom import main
+
+    (tmp_path / "keys.py").write_text("rsa.generate_private_key(key_size=2048)\n")
+
+    assert main([str(tmp_path)]) == 0
+    _validator().validate(json.loads(capsys.readouterr().out))
+
+    assert main([str(tmp_path / "missing")]) == 2
