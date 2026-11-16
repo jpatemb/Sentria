@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Sentria CBOM output (scan_cbom.py); regenerate rather than commit
+cbom.json
