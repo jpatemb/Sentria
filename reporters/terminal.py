@@ -27,6 +27,17 @@ def render_terminal_report(report: dict) -> str:
         lines.append(f"    remediation: {finding['remediation']}")
         lines.append("")
 
+    assets = report.get("crypto_assets", [])
+    if assets:
+        lines.append(f"Quantum-vulnerable cryptography: {len(assets)} use(s) found")
+        by_name: dict[str, int] = {}
+        for asset in assets:
+            by_name[asset["name"]] = by_name.get(asset["name"], 0) + 1
+        for name, count in sorted(by_name.items()):
+            lines.append(f"  {name}: {count}")
+        lines.append("  Full inventory: CycloneDX CBOM via reporters/cbom_reporter.py")
+        lines.append("")
+
     if report.get("narrative"):
         lines.append("Summary:")
         lines.append(report["narrative"])

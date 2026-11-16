@@ -11,10 +11,18 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from context.crypto import CryptoAsset
 from context.findings import CATEGORIES, SEVERITIES, Finding
 
 
-def build_report(target: str, findings: list[Finding], narrative: str = "") -> dict:
+def build_report(
+    target: str,
+    findings: list[Finding],
+    narrative: str = "",
+    crypto_assets: list[CryptoAsset] | None = None,
+) -> dict:
+    """crypto_assets is the inventory from the same scan that produced the
+    crypto findings; the CBOM reporter formats it, never rescans for it."""
     by_severity = {sev: 0 for sev in SEVERITIES}
     by_category = {cat: 0 for cat in CATEGORIES}
     for finding in findings:
@@ -31,4 +39,5 @@ def build_report(target: str, findings: list[Finding], narrative: str = "") -> d
             "by_category": by_category,
         },
         "narrative": narrative,
+        "crypto_assets": [a.to_dict() for a in crypto_assets or []],
     }

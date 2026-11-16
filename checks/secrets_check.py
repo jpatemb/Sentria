@@ -12,6 +12,7 @@ import math
 import re
 from pathlib import Path
 
+from checks._fs import iter_text_files
 from context.escalation import secret_severity
 from context.findings import Finding
 
@@ -23,8 +24,6 @@ _PATTERNS = (
     ("private_key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
     ("generic_api_key", re.compile(r"(?i)(?:api[_-]?key|secret|token)\s*[=:]\s*['\"][A-Za-z0-9\-_/+=]{16,}['\"]")),
 )
-
-_SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".tox"}
 
 # Secrets live in source/config files, never in multi-GB binaries or data
 # files. Without this cap, read_text() loads a huge file entirely into
@@ -47,26 +46,10 @@ def _shannon_entropy(s: str) -> float:
     return -sum((c / length) * math.log2(c / length) for c in counts.values())
 
 
-def _iter_text_files(root: Path):
-    for path in root.rglob("*"):
-        if not path.is_file() or path.is_symlink():
-            continue
-        if any(part in _SKIP_DIRS for part in path.parts):
-            continue
-        try:
-            if path.stat().st_size > _MAX_FILE_SIZE:
-                continue
-            path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
-            continue
-        yield path
-
-
 def scan_secrets(root: str | Path) -> list[Finding]:
     root = Path(root)
     findings: list[Finding] = []
-    for path in _iter_text_files(root):
-        text = path.read_text(encoding="utf-8")
+    for path, text in iter_text_files(root, _MAX_FILE_SIZE):
         for line_no, line in enumerate(text.splitlines(), start=1):
             matched_spans: list[tuple[int, int]] = []
             for kind, pattern in _PATTERNS:

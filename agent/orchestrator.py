@@ -13,9 +13,11 @@ import json
 import anthropic
 from dotenv import load_dotenv
 
+from checks.crypto_check import scan_crypto
 from checks.dependency_check import scan_dependencies
 from checks.permissions_check import scan_permissions
 from checks.secrets_check import scan_secrets
+from context.crypto import CryptoAsset
 from context.findings import Finding, trim_findings
 from context.report import build_report
 
@@ -52,16 +54,28 @@ _TOOLS = [
             "required": ["path"],
         },
     },
+    {
+        "name": "run_crypto_check",
+        "description": "Scan a directory tree for quantum-vulnerable public-key cryptography (RSA, ECC, DH, DSA) in source, configs and PEM headers.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"path": {"type": "string", "description": "Directory to scan."}},
+            "required": ["path"],
+        },
+    },
 ]
 
 
-def _dispatch(name: str, tool_input: dict) -> list[Finding]:
+def _dispatch(name: str, tool_input: dict) -> tuple[list[Finding], list[CryptoAsset]]:
     if name == "run_secrets_check":
-        return scan_secrets(tool_input["path"])
+        return scan_secrets(tool_input["path"]), []
     if name == "run_dependency_check":
-        return scan_dependencies(tool_input["manifest_path"])
+        return scan_dependencies(tool_input["manifest_path"]), []
     if name == "run_permissions_check":
-        return scan_permissions(tool_input["path"])
+        return scan_permissions(tool_input["path"]), []
+    if name == "run_crypto_check":
+        result = scan_crypto(tool_input["path"])
+        return result.findings, result.assets
     raise ValueError(f"unknown tool: {name}")
 
 
@@ -70,6 +84,7 @@ def run_scan(target_path: str, manifest_path: str, client: "anthropic.Anthropic 
     schemas/report.schema.json)."""
     client = client or anthropic.Anthropic()
     all_findings: list[Finding] = []
+    crypto_assets: list[CryptoAsset] = []
     narrative = ""
 
     messages = [
@@ -100,8 +115,9 @@ def run_scan(target_path: str, manifest_path: str, client: "anthropic.Anthropic 
         for block in response.content:
             if block.type != "tool_use":
                 continue
-            findings = _dispatch(block.name, block.input)
+            findings, assets = _dispatch(block.name, block.input)
             all_findings.extend(findings)
+            crypto_assets.extend(assets)
             tool_results.append({
                 "type": "tool_result",
                 "tool_use_id": block.id,
@@ -109,8 +125,10 @@ def run_scan(target_path: str, manifest_path: str, client: "anthropic.Anthropic 
             })
         messages.append({"role": "user", "content": tool_results})
 
+    # Trimming bounds the findings list only; the crypto inventory is kept
+    # whole because a CBOM that silently drops entries is an incomplete BOM.
     trimmed = trim_findings(all_findings, MAX_FINDINGS_IN_CONTEXT)
-    return build_report(target_path, trimmed, narrative=narrative)
+    return build_report(target_path, trimmed, narrative=narrative, crypto_assets=crypto_assets)
 
 
 if __name__ == "__main__":

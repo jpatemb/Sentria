@@ -34,6 +34,24 @@ _CVSS_SEVERITY_BANDS = (
 )
 
 
+# Harvest-now-decrypt-later ranking (NIST IR 8547): traffic protected by
+# quantum-vulnerable key establishment can be recorded today and decrypted
+# later, so key exchange is the urgent half. A forged signature cannot
+# retroactively compromise a past session, so signature-only use ranks
+# lower. "unspecified" (e.g. a bare RSA or EC key with no visible usage) is
+# ranked as key exchange: the key may be used for key establishment and the
+# scan can't rule it out.
+CRYPTO_USAGE_SEVERITY = {
+    "key_exchange": "high",
+    "unspecified": "high",
+    "signature": "medium",
+}
+
+
+def crypto_severity(usage: str) -> str:
+    return CRYPTO_USAGE_SEVERITY[usage]
+
+
 def secret_severity(kind: str) -> str:
     return SECRET_KIND_SEVERITY.get(kind, "medium")
 

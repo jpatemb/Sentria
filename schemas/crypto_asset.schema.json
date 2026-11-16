@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "crypto_asset.schema.json",
+  "title": "CryptoAsset",
+  "description": "One detected use of quantum-vulnerable public-key crypto. Its id matches the id of the crypto Finding built from the same detection.",
+  "type": "object",
+  "required": [
+    "id",
+    "algorithm",
+    "name",
+    "usage",
+    "location",
+    "line",
+    "oid",
+    "primitive",
+    "crypto_functions",
+    "nist_quantum_security_level",
+    "nist_deprecation",
+    "recommended_migration",
+    "reference",
+    "hndl_risk",
+    "parameter_set",
+    "curve",
+    "classical_security_level"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "algorithm": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "usage": {
+      "type": "string",
+      "enum": [
+        "key_exchange",
+        "signature",
+        "unspecified"
+      ]
+    },
+    "location": {
+      "type": "string"
+    },
+    "line": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "oid": {
+      "type": "string"
+    },
+    "primitive": {
+      "type": "string"
+    },
+    "crypto_functions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nist_quantum_security_level": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 6
+    },
+    "nist_deprecation": {
+      "type": "string"
+    },
+    "recommended_migration": {
+      "type": "string"
+    },
+    "reference": {
+      "type": "string"
+    },
+    "hndl_risk": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "parameter_set": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "curve": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "classical_security_level": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    }
+  }
+}
